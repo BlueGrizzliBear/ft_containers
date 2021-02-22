@@ -25,7 +25,12 @@ ft::vector<Type, Alloc>::vector(InputIterator first, InputIterator last, const a
 template <typename Type, class Alloc>
 ft::vector<Type, Alloc>::vector(const vector& x) : _alloc(x._alloc), _size(0), _head(NULL), _tail(NULL), _end(NULL)
 {
-	*this = x;
+	_head = _alloc.allocate(x.size());
+	_size = x.size();
+	for (size_type i = 0; i < size(); ++i)
+		_alloc.construct(_head + i, x[i]);
+	_tail = _head + _size;
+	_end = _tail;
 }
 
 
@@ -45,7 +50,10 @@ ft::vector<Type, Alloc> &	ft::vector<Type, Alloc>::operator=(vector const & rhs)
 {
 	if (this != &rhs)
 	{
-		_reallocate(rhs.size(), 1);
+		if (rhs.size() > capacity())
+			_reallocate(rhs.size(), 0);
+		else
+			clear();
 
 		Type * this_tmp = this->_head;
 		Type * rhs_tmp = rhs._head;
@@ -114,9 +122,14 @@ typename ft::vector<Type, Alloc>::size_type	ft::vector<Type, Alloc>::max_size(vo
 template <typename Type, class Alloc>
 void	ft::vector<Type, Alloc>::resize(size_type n, value_type val)
 {
-	if (n > capacity())
+	if (n >= capacity())
 	{
-		_reallocate(n, 1);
+		if (n == capacity())
+			_reallocate(n, 0);
+		else if (n <= 2 * size())
+			_reallocate(n, -1);
+		else
+			_reallocate(n, 0);
 		while (n > size())
 		{
 			_alloc.construct(_tail, val);
@@ -127,11 +140,7 @@ void	ft::vector<Type, Alloc>::resize(size_type n, value_type val)
 	else
 	{
 		while (n < size())
-		{
-			_alloc.destroy(_tail);
-			--_tail;
-			--_size;
-		}
+			pop_back();
 	}
 }
 
@@ -275,8 +284,8 @@ void	ft::vector<Type, Alloc>::push_back(const value_type & val)
 {
 	if (_tail == _end)
 		_reallocate(size() + 1, 1);
-	++_size;
 	_alloc.construct(_tail, val);
+	++_size;
 	++_tail;
 }
 
@@ -293,13 +302,14 @@ template <typename Type, class Alloc>
 typename ft::vector<Type, Alloc>::iterator	ft::vector<Type, Alloc>::insert(iterator position, const value_type & val)
 {
 	difference_type	diff = iterator(_tail) - position;
+	size_type d = static_cast<size_type>(diff);
 
 	if (size() + 1 > capacity())
 		_reallocate(size() + 1, 1);
 
-	difference_type i = 0;
+	size_type i = 0;
 
-	while (i < diff)
+	while (i < d)
 	{
 		memmove(static_cast<void*>(&(operator[](size() - i))), static_cast<void*>(&(operator[](size() - i - 1))), sizeof(Type));
 		++i;
@@ -355,18 +365,34 @@ typename ft::vector<Type, Alloc>::iterator	ft::vector<Type, Alloc>::erase(iterat
 			_alloc.construct(&(*tmp), *(tmp + diff));
 	}
 	if (end() - last - diff > 0)
-		memmove(static_cast<void*>(&(*last)), static_cast<void*>(&(*(last + diff))), (end() - last - diff) * sizeof(Type));
+		memmove(static_cast<void*>(&(*last)), static_cast<void*>(&(*(last + diff))), static_cast<size_type>((end() - last) - diff) * sizeof(Type));
 	_tail -= diff;
-	_size -= diff;
+	_size -= static_cast<size_type>(diff);
 	return (ret);
 }
 
 template <typename Type, class Alloc>
 void	ft::vector<Type, Alloc>::swap(vector & x)
 {
-	vector tmp(x);
-	x = *this;
-	*this = tmp;
+	Type * head_tmp;
+	Type * tail_tmp;
+	Type * end_tmp;
+	size_t size_tmp;
+
+	head_tmp = x._head;
+	tail_tmp = x._tail;
+	end_tmp = x._end;
+	size_tmp = x._size;
+
+	x._head = this->_head;
+	x._tail = this->_tail;
+	x._end = this->_end;
+	x._size = this->_size;
+
+	this->_head = head_tmp;
+	this->_tail = tail_tmp;
+	this->_end = end_tmp;
+	this->_size = size_tmp;
 }
 
 template <typename Type, class Alloc>
@@ -388,16 +414,18 @@ void	ft::vector<Type, Alloc>::clear(void)
 
 /* --- Private functions --- */
 template <class Type, class Alloc>
-void	ft::vector<Type, Alloc>::_reallocate(size_type n, bool twice)
+void	ft::vector<Type, Alloc>::_reallocate(size_type n, int twice)
 {
 	size_type new_capacity = n;
 	size_type new_size = size();
 
 	if (n > size())
 	{
-		if (twice && n <= 2 * size())
+		if (twice == 1 && n <= 2 * size())
 			new_capacity = 2 * size();
-
+		else if (twice == -1 && n <= 2 * size())
+			new_capacity = 2 * capacity();
+		
 		Type * head_tmp = _alloc.allocate(new_capacity);
 		for (size_type i = 0; i < size(); ++i)
 			_alloc.construct(head_tmp + i, _head[i]);
@@ -466,7 +494,7 @@ template <typename Type, class Alloc>
 template <class InputIterator>
 void	ft::vector<Type, Alloc>::_add_values_from_iterators(InputIterator & first, InputIterator & last, int)
 {
-	_add_n_values_from_int(first, last);
+	_add_n_values_from_int(static_cast<size_t>(first), static_cast<value_type>(last));
 }
 
 template <typename Type, class Alloc>

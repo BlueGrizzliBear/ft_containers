@@ -11,7 +11,7 @@
 
 	/* copy		(2)	*/
 	template <class Type, class Alloc, class Node>
-	ft::BaseIterator<Type, Alloc, Node>::BaseIterator(BaseIterator const & cpy) : _current(cpy._current)	{}
+	ft::BaseIterator<Type, Alloc, Node>::BaseIterator(BaseIterator<value_type, Alloc, Node> const & cpy) : _current(cpy.getCurrent()) {}
 
 /* Destructor */
 	template <class Type, class Alloc, class Node>
@@ -82,15 +82,25 @@ bool	ft::operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterat
 /* Constructor */
 	/* default	(1)	*/
 	template <class Type, class Alloc, class Node>
-	ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Node * node) : BaseIterator<Type, Alloc, Node>(node) {}
+	ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Node * node) : BaseIterator<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(node)
+	{
+		this->_current = node;
+	}
 
 	/* copy		(2)	*/
 	template <class Type, class Alloc, class Node>
-	ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Bidirectional const & cpy) : BaseIterator<Type, Alloc, Node>(cpy) {}
+	ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Bidirectional<value_type, alloc_type, node_type> const & cpy) : BaseIterator<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
+	// ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Bidirectional<value_type, Alloc, Node> const & cpy) {
+	// 	std::cout << "Bidir copy constructor\n";
+	// 	*this = cpy; }
 
 	/* base		(3)	*/
-	template <class Type, class Alloc, class Node>
-	ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<Type, Alloc, Node> const & cpy) : BaseIterator<Type, Alloc, Node>(cpy) {}
+	// template <class Type, class Alloc, class Node>
+	// // ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<value_type, alloc_type, node_type> const & cpy) : BaseIterator<value_type, Alloc, Node>(cpy) {
+	// ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<Type, Alloc, Node> const & cpy) {
+	// 	*this = cpy; }
+	// // ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<value_type, alloc_type, node_type> const & cpy) {
+	// 	*this = cpy; }
 
 /* Destructor */
 	template <class Type, class Alloc, class Node>
@@ -151,6 +161,7 @@ bool	ft::operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterat
 	}
 
 /* Operators */
+
 	/* dereference	(4)	*/
 	template <class Type, class Alloc, class Node>
 	typename ft::Bidirectional<Type, Alloc, Node>::reference	ft::Bidirectional<Type, Alloc, Node>::operator*(void) const
@@ -206,15 +217,19 @@ bool	ft::operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterat
 /* Constructor */
 	/* default	(1)	*/
 	template <class Type, class Alloc, class Node>
-	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(Node * node) : Bidirectional<Type, Alloc, Node>(node) {}
+	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(Node * node) : Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(node) {}
 
 	/* copy		(2)	*/
 	template <class Type, class Alloc, class Node>
-	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(RandomAccess const & cpy) : Bidirectional<Type, Alloc, Node>(cpy) {}
+	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(RandomAccess<value_type, Alloc, Node> const & cpy) : Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
 
-	/* base		(3)	*/
+	/* copy		(3)	*/
 	template <class Type, class Alloc, class Node>
-	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(BaseIterator<Type, Alloc, Node> const & cpy) : Bidirectional<Type, Alloc, Node>(cpy) {}
+	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(Bidirectional<value_type, Alloc, Node> const & cpy) : Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
+
+	// /* base		(3)	*/
+	// template <class Type, class Alloc, class Node>
+	// ft::RandomAccess<Type, Alloc, Node>::RandomAccess(BaseIterator<Type, Alloc, Node> const & cpy) : Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
 
 /* Destructor */
 	template <class Type, class Alloc, class Node>
@@ -296,9 +311,6 @@ bool	ft::operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterat
 	{
 		return (this->_current[n]);
 	}
-
-
-
 
 
 

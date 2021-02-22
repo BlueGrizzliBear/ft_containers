@@ -113,7 +113,7 @@ namespace ft
 		
 		/* --- Private functions --- */
 		private:
-			void	_reallocate(size_type n, bool twice);
+			void	_reallocate(size_type n, int twice);
 
 			void	_check_max_size(size_type n) const throw(std::length_error);
 			void	_check_out_of_bound(size_type n) const throw(std::out_of_range);

@@ -3,8 +3,12 @@
 /* Constructor */
 /* default	(1)	*/
 template <typename Type, class Alloc>
-ft::list<Type, Alloc>::list(const allocator_type & alloc) : _alloc(alloc), _size(0), _end(_add_node(value_type(), NULL, NULL))
-{ _update(); }
+ft::list<Type, Alloc>::list(const allocator_type & alloc) : _alloc(alloc), _size(0), _end(_node_alloc.allocate(1))
+{
+	_end->next = NULL;
+	_end->prev = NULL;
+	_update();
+}
 
 /* fill		(2)	*/
 template <typename Type, class Alloc>
@@ -18,7 +22,7 @@ ft::list<Type, Alloc>::list(size_type n, const value_type & val, const allocator
 /* range	(3)	*/
 template <typename Type, class Alloc>
 template <class InputIterator>
-ft::list<Type, Alloc>::list(InputIterator first, InputIterator last, const allocator_type & alloc) : _alloc(alloc), _size(0), _end(_add_node(value_type(), NULL, NULL))
+ft::list<Type, Alloc>::list(InputIterator first, InputIterator last, const allocator_type & alloc) : _alloc(alloc), _size(0), _end(_node_alloc.allocate(1))
 {
 	_add_values_from_iterators(first, last, typename ft::is_integral<InputIterator>::type());
 	_update();
@@ -26,7 +30,7 @@ ft::list<Type, Alloc>::list(InputIterator first, InputIterator last, const alloc
 
 /* copy		(4)	*/
 template <typename Type, class Alloc>
-ft::list<Type, Alloc>::list(const list & cpy) : _size(0), _end(_add_node(value_type(), NULL, NULL))
+ft::list<Type, Alloc>::list(const list & cpy) : _size(0), _end(_node_alloc.allocate(1))
 { *this = cpy; }
 
 
@@ -352,10 +356,17 @@ void	ft::list<Type, Alloc>::splice(iterator position, list& x, iterator i)
 		{	x._head = x._end->next;
 			x._tail = x._end->prev;
 		}
-		x._update();
 
-		i.getCurrent()->prev = position.getCurrent()->prev;
-		i.getCurrent()->next = position.getCurrent();
+		if (empty())
+		{
+			i.getCurrent()->prev = position.getCurrent();
+			i.getCurrent()->next = position.getCurrent();
+		}
+		else
+		{
+			i.getCurrent()->prev = position.getCurrent()->prev;
+			i.getCurrent()->next = position.getCurrent();
+		}
 
 		if (empty())
 		{
@@ -371,7 +382,6 @@ void	ft::list<Type, Alloc>::splice(iterator position, list& x, iterator i)
 			_tail = _end->prev;
 		}
 		_size++;
-		_update();
 	}
 }
 
@@ -379,13 +389,20 @@ void	ft::list<Type, Alloc>::splice(iterator position, list& x, iterator i)
 template <typename Type, class Alloc>
 void	ft::list<Type, Alloc>::splice(iterator position, list& x, iterator first, iterator last)
 {
-	iterator	tmp;
+	size_t tmp = 0;
+	iterator	tmp_first(first);
 
-	while (first != last)
+	while (tmp_first != last)
 	{
-		tmp = first;
-		first++;
-		splice(position, x, tmp);
+		tmp_first++;
+		tmp++;
+	}
+	while (tmp != 0)
+	{
+		tmp--;
+		iterator tmp(first.getCurrent()->next);
+		splice(position, x, first);
+		first = tmp;
 	}
 }
 
@@ -556,11 +573,11 @@ void	ft::list<Type, Alloc>::reverse(void)
 	{
 		while (begin != end)
 		{
-			tmp = begin;
+			iterator tmp(begin.getCurrent());
 			begin--;
 			result.splice(result.end(), *this, tmp);
-			merge(result);
 		}
+		splice(this->end(), result, result.begin(), result.end());
 	}
 }
 

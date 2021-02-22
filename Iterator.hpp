@@ -33,7 +33,6 @@ namespace ft
 		typedef T			value_type;
 		typedef T *			pointer;
 		typedef T &			reference;
-		typedef random_access_iterator_tag	iterator_category;
 	};
 	
 	template <class T>
@@ -43,13 +42,12 @@ namespace ft
 		typedef T			value_type;
 		typedef const T *	pointer;
 		typedef const T &	reference;
-		typedef random_access_iterator_tag	iterator_category;
 	};
 	
 
 	/* BaseIterator Class declaration */
 	template <class Type, class Alloc, class Node>
-	class BaseIterator : virtual public iterator_traits<Type>
+	class BaseIterator
 	{
 		protected:
 		/* --- Member attributes --- */
@@ -57,14 +55,15 @@ namespace ft
 
 		public:
 		/* --- Member types --- */
-			typedef typename ft::iterator_traits<Type>::value_type	value_type;
-			typedef typename ft::iterator_traits<Type>::pointer		pointer;
-			typedef typename ft::iterator_traits<Type>::reference	reference;
+			typedef typename ft::iterator_traits<Type>::difference_type	difference_type;
+			typedef typename ft::iterator_traits<Type>::value_type		value_type;
+			typedef typename ft::iterator_traits<Type>::pointer			pointer;
+			typedef typename ft::iterator_traits<Type>::reference		reference;
 
 		/* --- Member functions --- */
 		/* Constructor */
 			/* default	(1)	*/	BaseIterator(Node * node = NULL);
-			/* copy		(2)	*/	BaseIterator(BaseIterator const & cpy);
+			/* copy		(2)	*/	BaseIterator(BaseIterator<value_type, Alloc, Node> const & cpy);
 
 		/* Destructor */
 			~BaseIterator();
@@ -95,22 +94,23 @@ namespace ft
 
 	/* Bidirectionnal Class declaration */
 	template <class Type, class Alloc, class Node>
-	class Bidirectional : virtual public ft::iterator_traits<Type>, public BaseIterator<Type, Alloc, Node>
+	class Bidirectional : public BaseIterator<typename ft::iterator_traits<Type>::value_type, Alloc, Node>
 	{
 		public:
 		/* --- Member types --- */
 			typedef Alloc	alloc_type;
 			typedef Node	node_type;
+			typedef typename ft::iterator_traits<Type>::difference_type	difference_type;
 			typedef typename ft::iterator_traits<Type>::value_type		value_type;
 			typedef typename ft::iterator_traits<Type>::pointer			pointer;
 			typedef typename ft::iterator_traits<Type>::reference		reference;
-			typedef typename ft::iterator_traits<Type>::difference_type	difference_type;
+			typedef bidirectional_iterator_tag	iterator_category;
 
 		/* --- Member functions --- */
 		/* Constructor */
 			/* default	(1)	*/	Bidirectional(Node * node = NULL);
-			/* copy		(2)	*/	Bidirectional(Bidirectional const & cpy);
-			/* base		(3)	*/	Bidirectional(BaseIterator<Type, Alloc, Node> const & cpy);
+			/* copy		(2)	*/	Bidirectional(Bidirectional<value_type, Alloc, Node> const & cpy);
+			// /* base		(3)	*/	Bidirectional(BaseIterator<Type, Alloc, Node> const & cpy);
 
 		/* Destructor */
 			virtual ~Bidirectional();
@@ -145,7 +145,7 @@ namespace ft
 
 	/* RandomAccess Class declaration */
 	template <class Type, class Alloc, class Node>
-	class RandomAccess : virtual public ft::iterator_traits<Type>, public Bidirectional<Type, Alloc, Node>
+	class RandomAccess : public Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>
 	{
 		public:
 		/* --- Member types --- */
@@ -155,12 +155,14 @@ namespace ft
 			typedef typename ft::iterator_traits<Type>::pointer			pointer;
 			typedef typename ft::iterator_traits<Type>::reference		reference;
 			typedef typename ft::iterator_traits<Type>::difference_type	difference_type;
+			typedef random_access_iterator_tag	iterator_category;
 
 		/* --- Member functions --- */
 		/* Constructor */
 			/* default	(1)	*/	RandomAccess(Node * node = NULL);
-			/* copy		(2)	*/	RandomAccess(RandomAccess const & cpy);
-			/* base		(3)	*/	RandomAccess(BaseIterator<Type, Alloc, Node> const & cpy);
+			/* copy		(2)	*/	RandomAccess(RandomAccess<value_type, Alloc, Node> const & cpy);
+			/* copy		(3)	*/	RandomAccess(Bidirectional<value_type, Alloc, Node> const & cpy);
+			// /* base		(3)	*/	RandomAccess(BaseIterator<Type, Alloc, Node> const & cpy);
 
 		/* Destructor */
 			virtual ~RandomAccess();

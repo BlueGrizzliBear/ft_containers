@@ -5,6 +5,7 @@
 template <class Key, class T, class Compare, class Alloc>
 ft::map<Key, T, Compare, Alloc>::map(const key_compare & comp, const allocator_type & alloc)
 : _compare(comp), _alloc(alloc), _size(0), _root(_create_node(std::pair<Key, T>(), 1))
+// : _compare(comp), _alloc(alloc), _size(0), _root(_node_alloc.allocate(1))
 {}
 
 /* range	(2)	*/
@@ -13,11 +14,10 @@ template <class InputIterator>
 ft::map<Key, T, Compare, Alloc>::map(InputIterator first, InputIterator last, const key_compare & comp, const allocator_type & alloc)
 : _compare(comp), _alloc(alloc), _size(0), _root(_create_node(std::pair<Key, T>(), 1))
 {
-	InputIterator tmp;
 	while (first != last)
 	{
-		tmp = first;
-		first++;
+		InputIterator tmp(first);
+		++first;
 		_try_add_node(*tmp);
 	}
 }
@@ -66,15 +66,17 @@ template <class Key, class T, class Compare, class Alloc>
 typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::begin(void)
 {
 	PNode<Key, T, Compare, Alloc> * tmp = _root;
+
 	while (tmp->left && !tmp->left->is_end)
 		tmp = tmp->left;
+	// std::cerr << "RETURNING ITERATOR ON tmp.first|" << tmp->pair.first << "| and second|" << tmp->pair.second << "| and is_end|" << tmp->is_end << "|\n";
 	return (iterator(tmp));
 }
 
 template <class Key, class T, class Compare, class Alloc>
 typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::begin(void) const
 {
-	PNode<Key, T, Compare, Alloc> * tmp = _root;
+	PNode<Key, T, Compare, Alloc> * tmp = _root;	
 	while (tmp->left && !tmp->left->is_end)
 		tmp = tmp->left;
 	return (const_iterator(tmp));
@@ -88,6 +90,7 @@ typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Allo
 	{
 		while (tmp->right && !tmp->right->is_end)
 			tmp = tmp->right;
+		// std::cerr << "RETURNING ITERATOR ON END() tmp.first|" << tmp->right->pair.first << "| and second|" << tmp->right->pair.second << "| and is_end|" << tmp->right->is_end << "|\n";
 		return (iterator(tmp->right));
 	}
 	return (iterator(tmp));
@@ -190,24 +193,89 @@ typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Allo
 	PNode<Key, T, Compare, Alloc> * end = NULL;
 	bool	is_left = 0;
 
+	PNode<Key, T, Compare, Alloc> * tmp = NULL;
+	bool	has_past_root = 0;
+
+	// std::cout << "position.pair.first|" << position.getCurrent()->pair.first << "|\n";
 	while (!tmp_root->is_end)
 	{
 		if (_compare(val.first, tmp_root->pair.first))
-			next = &(tmp_root->left);
+		{
+			if (!tmp_root->parent || has_past_root)
+			{
+				// std::cout << "went left obvious\n";
+				next = &(tmp_root->left);
+			}
+			else
+			{
+				tmp = tmp_root;
+				while (tmp->parent && _compare(val.first, tmp->parent->pair.first))
+					tmp = tmp->parent;
+				if (tmp->parent)
+				{
+					// std::cout << "went left at parent\n";
+					next = &(tmp->left);
+				}				
+				else
+				{
+					if (_compare(val.first, tmp->pair.first))
+					{
+						// std::cout << "went left at ROOT\n";
+						next = &(tmp->left);
+					}
+					else
+					{
+						// std::cout << "went left after search\n";
+						next = &(tmp_root->left);
+					}
+					has_past_root = 1;
+				}
+			}
+		}
 		else if (_compare(tmp_root->pair.first, val.first))
 		{
-			if (tmp_root->parent && _compare(val.first, tmp_root->parent->pair.first))
+			if (!tmp_root->parent || has_past_root)
+			{
+				// std::cout << "went right obvious\n";
 				next = &(tmp_root->right);
+			}
 			else
-				next = &(tmp_root->parent);
+			{
+				tmp = tmp_root;
+				while (tmp->parent && _compare(tmp->parent->pair.first, val.first))
+					tmp = tmp->parent;
+				if (tmp->parent)
+				{
+					// std::cout << "went right at parent\n";
+					next = &(tmp->right);
+				}
+				else
+				{
+					if (_compare(tmp->pair.first, val.first))
+					{
+						// std::cout << "went right at ROOT\n";
+						next = &(tmp->right);
+					}
+					else
+					{
+						// std::cout << "went right after search\n";
+						next = &(tmp_root->right);
+					}
+					has_past_root = 1;
+				}
+			}
 		}
 		else
+		{
+			// std::cout << "not inserted\n";
 			return (iterator(tmp_root));
+		}
 		if (*next == NULL)
 		{
 			*next = _create_node(val, 0);
 			++_size;
 			(*next)->parent = tmp_root;
+			// std::cout << "inserted after NULL\n";
 			return (iterator(*next));
 		}
 		else if ((*next)->is_end)
@@ -223,10 +291,12 @@ typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Allo
 			(end)->parent = *next;
 			++_size;
 			(*next)->parent = tmp_root;
+			// std::cout << "inserted after END\n";
 			return (iterator(*next));
 		}
 		tmp_root = *next;
 	}
+	// std::cout << "inserted BECAUSE END\n";
 	return (insert(val).first);
 }
 
@@ -247,11 +317,13 @@ void	ft::map<Key, T, Compare, Alloc>::insert(InputIterator first, InputIterator 
 
 /* (1)	*/
 template <class Key, class T, class Compare, class Alloc>
-void	ft::map<Key, T, Compare, Alloc>::erase(typename ft::map<Key, T, Compare, Alloc>::iterator position)
+void	ft::map<Key, T, Compare, Alloc>::erase(iterator position)
 {
 	PNode<Key, T, Compare, Alloc> * parent = position.getCurrent()->parent;
-	bool was_left = parent && parent->left == position.getCurrent();
-	bool was_right = parent && parent->right == position.getCurrent();
+
+	bool was_left = (parent && parent->left == position.getCurrent());
+	bool was_right = (parent && parent->right == position.getCurrent());
+
 	PNode<Key, T, Compare, Alloc> * left = position.getCurrent()->left;
 	PNode<Key, T, Compare, Alloc> * right = position.getCurrent()->right;
 
@@ -278,23 +350,27 @@ void	ft::map<Key, T, Compare, Alloc>::erase(typename ft::map<Key, T, Compare, Al
 			}
 			else if (left->is_end)
 			{
-				PNode<Key, T, Compare, Alloc> * tmp = right;
-				while (tmp->left)
-					tmp = tmp->left;
-				tmp->left = left;
-				left->parent = tmp;
-				_root = tmp;
-				tmp->parent = NULL;
+				// std::cerr << "only right branch lives\n";
+				PNode<Key, T, Compare, Alloc> ** tmp = &right;
+				_root = &*right;
+				while ((*tmp)->left)
+					(*tmp) = (*tmp)->left;
+				(*tmp)->left = left;
+				(*tmp)->left->parent = (*tmp);
+				_root->parent = NULL;
+				// left->parent = (*tmp);
+				// std::cerr << "_root|" << _root << " and left|" << _root->left << "| and right|" << _root->right << "|\n";
 			}
 			else if (right->is_end)
 			{
-				PNode<Key, T, Compare, Alloc> * tmp = left;
-				while (tmp->right)
-					tmp = tmp->right;
-				tmp->right = right;
-				right->parent = tmp;
-				_root = tmp;
-				tmp->parent = NULL;
+				PNode<Key, T, Compare, Alloc> ** tmp = &left;
+				_root = &*left;
+				while ((*tmp)->right)
+					(*tmp) = (*tmp)->right;
+				(*tmp)->right = right;
+				right->parent = (*tmp);
+				_root->parent = NULL;
+				// (*tmp)->right->parent = (*tmp);
 			}
 		}
 		else if (left && !right)
@@ -312,41 +388,64 @@ void	ft::map<Key, T, Compare, Alloc>::erase(typename ft::map<Key, T, Compare, Al
 	{
 		if (was_left)
 		{
+			// std::cerr << "was left\n";
 			if (left && left->is_end)
 			{
+				// std::cerr << "setting to END parent->left\n";
 				parent->left = left;
 				left->parent = parent;
 			}
 			else
+			{
+				// std::cerr << "left|" << left << "|\n";
+				// std::cerr << "setting to NULL parent->left\n";
 				parent->left = NULL;
+			}
 		}
 		else if (was_right)
 		{
+			// std::cerr << "was right\n";
 			if (right && right->is_end)
 			{
+				// std::cerr << "setting to END parent->right\n";
 				parent->right = right;
 				right->parent = parent;
 			}
 			else
+			{
+				// std::cerr << "setting to NULL parent->right\n";
 				parent->right = NULL;
+			}
 		}
 		if (left && !left->is_end)
+		{
+			// std::cerr << "reinserting branch left\n";
 			_reinsert_branch(left);
+		}
 		if (right && !right->is_end)
+		{
+			// std::cerr << "reinserting branch right\n";
 			_reinsert_branch(right);
+		}
 	}
 	--_size;
 }
 
 /* (2)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::size_type	ft::map<Key, T, Compare, Alloc>::erase(const typename ft::map<Key, T, Compare, Alloc>::key_type & k)
+typename ft::map<Key, T, Compare, Alloc>::size_type	ft::map<Key, T, Compare, Alloc>::erase(const key_type & k)
 {
 	PNode<Key, T, Compare, Alloc> * tmp;
 	size_type	number = 0;
 
-	while ((tmp = _find_node(std::pair<Key, T>(k, T()))))
+	// std::cerr << "\ntrying to erase k|" << k << "|\n";
+	while ((tmp = _find_node(std::pair<Key, T>(k, T()))) && !tmp->is_end)
 	{
+		// std::cerr << "tmp->parent|" << tmp->parent << "|, first|" << tmp->parent->pair.first << "| and second|" << tmp->parent->pair.second << "|\n";
+		// if (tmp->left)
+		// 	std::cerr << "tmp->left|" << tmp->left << "|, first|" << tmp->left->pair.first << "| and second|" << tmp->left->pair.second << "|\n";
+		// if (tmp->right)
+		// 	std::cerr << "tmp->right|" << tmp->right << "|, first|" << tmp->right->pair.first << "| and second|" << tmp->right->pair.second << "|\n";
 		erase(iterator(tmp));
 		number++;
 	}
@@ -355,15 +454,23 @@ typename ft::map<Key, T, Compare, Alloc>::size_type	ft::map<Key, T, Compare, All
 
 /* (3)	*/
 template <class Key, class T, class Compare, class Alloc>
-void	ft::map<Key, T, Compare, Alloc>::erase(typename ft::map<Key, T, Compare, Alloc>::iterator first, typename ft::map<Key, T, Compare, Alloc>::iterator last)
+void	ft::map<Key, T, Compare, Alloc>::erase(iterator first, iterator last)
 {
-	iterator tmp;
-
+	// std::cerr << "inside ERASE iterators\n";
 	while (first != last)
 	{
-		tmp = first;
+		iterator tmp(first);
 		++first;
+		
+		// std::cerr << "erasing tmp|" << tmp.getCurrent() << "|, tmp.first|" << tmp.getCurrent()->pair.first << "|\n";
+		// if (tmp.getCurrent()->parent)
+		// 	std::cerr << "tmp->parent|" << tmp.getCurrent()->parent << " and tmp->parent->pair.first|" << tmp.getCurrent()->parent->pair.first << "| and second|" << tmp.getCurrent()->parent->pair.second << "|\n";
+		// if (tmp.getCurrent()->left)
+		// 	std::cerr << "tmp->left|" << tmp.getCurrent()->left << " and tmp->left->pair.first|" << tmp.getCurrent()->left->pair.first << "| and second|" << tmp.getCurrent()->left->pair.second << "|\n";
+		// if (tmp.getCurrent()->right)
+		// 	std::cerr << "tmp->right|" << tmp.getCurrent()->right << " and tmp->right->pair.first|" << tmp.getCurrent()->right->pair.first << "| and second|" << tmp.getCurrent()->right->pair.second << "|\n";
 		erase(tmp);
+		// std::cerr << "AFTER ERASE\n\n";
 	}
 }
 
@@ -401,7 +508,7 @@ typename ft::map<Key, T, Compare, Alloc>::value_compare	ft::map<Key, T, Compare,
 /* Operations */
 /* (1)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::find(const typename ft::map<Key, T, Compare, Alloc>::key_type & k)
+typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::find(const key_type & k)
 {
 	std::pair<key_type, T> tmp(k, T());
 	if (_find_node(tmp) == NULL || _find_node(tmp) == end().getCurrent())
@@ -411,7 +518,7 @@ typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Allo
 
 /* (2)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::find(const typename ft::map<Key, T, Compare, Alloc>::key_type & k) const
+typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::find(const key_type & k) const
 {
 	std::pair<key_type, T> const tmp(k, T());
 	if (_find_node(tmp) == NULL || _find_node(tmp) == end().getCurrent())
@@ -420,17 +527,17 @@ typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare
 }
 
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::size_type	ft::map<Key, T, Compare, Alloc>::count(const typename ft::map<Key, T, Compare, Alloc>::key_type & k) const
+typename ft::map<Key, T, Compare, Alloc>::size_type	ft::map<Key, T, Compare, Alloc>::count(const key_type & k) const
 {
 	std::pair<key_type, T> tmp(k, T());
-	if (_find_node(tmp) == NULL || _find_node(tmp) == end().getCurrent())
+	if (_find_node(tmp) == NULL || _find_node(tmp)->is_end)
 		return (0);
 	return (1);
 }
 
 /* (1)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::lower_bound(const typename ft::map<Key, T, Compare, Alloc>::key_type & k)
+typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::lower_bound(const key_type & k)
 {
 	iterator begin = this->begin();
 	iterator end = this->end();
@@ -446,7 +553,7 @@ typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Allo
 
 /* (2)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::lower_bound(const typename ft::map<Key, T, Compare, Alloc>::key_type & k) const
+typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::lower_bound(const key_type & k) const
 {
 	const_iterator begin = this->begin();
 	const_iterator end = this->end();
@@ -463,7 +570,7 @@ typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare
 
 /* (1)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::upper_bound(const typename ft::map<Key, T, Compare, Alloc>::key_type & k)
+typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Alloc>::upper_bound(const key_type & k)
 {
 	iterator begin = this->begin();
 	iterator end = this->end();
@@ -479,7 +586,7 @@ typename ft::map<Key, T, Compare, Alloc>::iterator	ft::map<Key, T, Compare, Allo
 
 /* (2)	*/
 template <class Key, class T, class Compare, class Alloc>
-typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::upper_bound(const typename ft::map<Key, T, Compare, Alloc>::key_type & k) const
+typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare, Alloc>::upper_bound(const key_type & k) const
 {
 	const_iterator begin = this->begin();
 	const_iterator end = this->end();
@@ -495,14 +602,14 @@ typename ft::map<Key, T, Compare, Alloc>::const_iterator	ft::map<Key, T, Compare
 
 /* (1)	*/
 template <class Key, class T, class Compare, class Alloc>
-std::pair<typename ft::map<Key, T, Compare, Alloc>::const_iterator, typename ft::map<Key, T, Compare, Alloc>::const_iterator>	ft::map<Key, T, Compare, Alloc>::equal_range (const typename ft::map<Key, T, Compare, Alloc>::key_type & k) const
+std::pair<typename ft::map<Key, T, Compare, Alloc>::const_iterator, typename ft::map<Key, T, Compare, Alloc>::const_iterator>	ft::map<Key, T, Compare, Alloc>::equal_range (const key_type & k) const
 {
 	return (std::pair<const_iterator, const_iterator>(lower_bound(k), upper_bound(k)));
 }
 
 /* (2)	*/
 template <class Key, class T, class Compare, class Alloc>
-std::pair<typename ft::map<Key, T, Compare, Alloc>::iterator, typename ft::map<Key, T, Compare, Alloc>::iterator>	ft::map<Key, T, Compare, Alloc>::equal_range (const typename ft::map<Key, T, Compare, Alloc>::key_type & k)
+std::pair<typename ft::map<Key, T, Compare, Alloc>::iterator, typename ft::map<Key, T, Compare, Alloc>::iterator>	ft::map<Key, T, Compare, Alloc>::equal_range (const key_type & k)
 {
 	return (std::pair<iterator, iterator>(lower_bound(k), upper_bound(k)));
 }
@@ -526,6 +633,7 @@ typename ft::map<Key, T, Compare, Alloc>::value_type *	ft::map<Key, T, Compare, 
 		(_root->left)->parent = _root;
 		(_root->right)->parent = _root;
 		++_size;
+		return (&_root->pair);
 	}
 	while (!tmp_root->is_end)
 	{
@@ -534,7 +642,9 @@ typename ft::map<Key, T, Compare, Alloc>::value_type *	ft::map<Key, T, Compare, 
 		else if (_compare(tmp_root->pair.first, pair.first))
 			next = &(tmp_root->right);
 		else
+		{
 			return (&(tmp_root->pair));
+		}
 		if (*next == NULL)
 		{
 			*next = _create_node(pair, 0);
@@ -559,13 +669,13 @@ typename ft::map<Key, T, Compare, Alloc>::value_type *	ft::map<Key, T, Compare, 
 		}
 		tmp_root = *next;
 	}
-	return (&_root->pair);
+	return (&tmp_root->pair);
 }
 
 template <class Key, class T, class Compare, class Alloc>
 ft::PNode<Key, T, Compare, Alloc> *	ft::map<Key, T, Compare, Alloc>::_create_node(typename ft::map<Key, T, Compare, Alloc>::value_type pair, bool is_end)
 {
-	PNode<Key, T, Compare, Alloc> * new_node = _node_alloc.allocate(static_cast<size_type>(1));
+	PNode<Key, T, Compare, Alloc> * new_node = _node_alloc.allocate(1);
 	_node_alloc.construct(new_node, PNode<Key, T, Compare, Alloc>(pair.first, pair.second, is_end));
 	return (new_node);
 }
@@ -588,6 +698,8 @@ ft::PNode<Key, T, Compare, Alloc> *	ft::map<Key, T, Compare, Alloc>::_find_node(
 			return (tmp_root);
 		if (*next == NULL)
 			return (*next);
+		// else if ((*next)->is_end)
+		// 	return (NULL);
 		tmp_root = *next;
 	}
 	return (tmp_root);
@@ -609,6 +721,7 @@ void	ft::map<Key, T, Compare, Alloc>::_reinsert_branch(PNode<Key, T, Compare, Al
 		_root->right = _create_node(std::pair<Key, T>(), 1);
 		(_root->left)->parent = _root;
 		(_root->right)->parent = _root;
+		return ;
 	}
 	while (!tmp_root->is_end)
 	{
@@ -623,6 +736,16 @@ void	ft::map<Key, T, Compare, Alloc>::_reinsert_branch(PNode<Key, T, Compare, Al
 		{
 			*next = node;
 			(*next)->parent = tmp_root;
+			// std::cerr << "*next|" << (*next) << "| and first|" << (*next)->pair.first << "\n";
+			// if ((*next)->parent)
+			// 	std::cerr << "*next->parent|" << (*next)->parent << "| and first|" << (*next)->parent->pair.first << "\n";
+			// std::cerr << "*next->parent->left|" << (*next)->parent->left << "|\n";
+			// if ((*next)->left)
+			// 	std::cerr << "*next->left|" << (*next)->left << "| and first|" << (*next)->left->pair.first << "|\n";
+			// if ((*next)->right)
+			// 	std::cerr << "*next->right|" << (*next)->right << "| and first|" << (*next)->right->pair.first << "|\n";
+			// std::cerr << "*next->left|" << (*next)->left << "|\n";
+			// std::cerr << "*next->right|" << (*next)->right << "|\n";
 			return ;
 		}
 		else if ((*next)->is_end)
@@ -631,12 +754,29 @@ void	ft::map<Key, T, Compare, Alloc>::_reinsert_branch(PNode<Key, T, Compare, Al
 			if ((*next)->parent->left == end)
 				is_left = 1;
 			*next = node;
-			if (is_left)
-				(*next)->left = end;
-			else
-				(*next)->right = end;
-			(end)->parent = *next;
 			(*next)->parent = tmp_root;
+			if (is_left)
+			{
+				// std::cerr << "inserting to left\n";
+				while ((*next)->left)
+					(*next) = (*next)->left;
+				(*next)->left = end;
+				// std::cerr << "*next|" << (*next) << "| and first|" << (*next)->pair.first << "|\n";
+				// std::cerr << "*next->parent|" << (*next)->parent << "| and first|" << (*next)->parent->pair.first << "|\n";
+				// std::cerr << "*next->parent->left|" << (*next)->parent->left << "|\n";
+				// std::cerr << "*next->left|" << (*next)->left << "| and first|" << (*next)->left->pair.first << "|\n";
+				// std::cerr << "*next->left|" << (*next)->left << "|\n";
+				// std::cerr << "*next->right|" << (*next)->right << "| and first|" << (*next)->right->pair.first << "|\n";
+				// std::cerr << "*next->right|" << (*next)->right << "|\n";
+			}
+			else
+			{
+				// std::cerr << "inserting to right\n";
+				while ((*next)->right)
+					(*next) = (*next)->right;
+				(*next)->right = end;
+			}
+			(end)->parent = *next;
 			return ;
 		}
 		tmp_root = *next;

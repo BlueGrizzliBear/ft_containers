@@ -5,7 +5,7 @@
 /* Constructor */
 /*	default	(1)	*/
 	template <class Type, class Alloc>
-	ft::DLNode<Type, Alloc>::DLNode(void) : prev(NULL), next(NULL) {}
+	ft::DLNode<Type, Alloc>::DLNode(void) : val(), prev(NULL), next(NULL) {}
 
 /*	fill	(2)	*/
 	template <class Type, class Alloc>
@@ -13,7 +13,7 @@
 
 /*	copy	(3)	*/
 	template <class Type, class Alloc>
-	ft::DLNode<Type, Alloc>::DLNode(DLNode const & cpy) { *this = cpy; }
+	ft::DLNode<Type, Alloc>::DLNode(DLNode const & cpy) : val(cpy.val), prev(cpy.prev), next(cpy.next) {}
 
 /* Destructor */
 	template <class Type, class Alloc>
@@ -108,6 +108,9 @@
 	{
 		if (this != &rhs)
 		{
+			// this->pair(rhs.pair);
+			// pair.first = rhs.pair.first;
+			// pair.second = rhs.pair.second;
 			is_end = rhs.is_end;
 			parent = rhs.parent;
 			left = rhs.left;
@@ -136,17 +139,29 @@
 	{
 		PNode<Key, Type, Compare, Alloc> *	closest_par;
 		PNode<Key, Type, Compare, Alloc> *	old_closest_par;
+
+		PNode<Key, Type, Compare, Alloc> *	most_left;
 	
 		if (this->right)
 		{
-			return (*this->right);
+			most_left = this->right->left;
+			if (most_left)
+			{
+				while (most_left->left)
+					most_left = most_left->left;
+				return (*most_left);
+			}
+			else
+				return (*this->right);
 		}
 		old_closest_par = this;
 		closest_par = this->parent;
 		while (closest_par)
 		{
 			if (closest_par->left == old_closest_par)
+			{
 				return (*closest_par);
+			}
 			old_closest_par = closest_par;
 			closest_par = closest_par->parent;
 		}
@@ -169,17 +184,35 @@
 		PNode<Key, Type, Compare, Alloc> *	closest_par;
 		PNode<Key, Type, Compare, Alloc> *	old_closest_par;
 	
+		PNode<Key, Type, Compare, Alloc> *	most_right;
+
 		if (this->left)
-			return (*this->left);
+		{
+			most_right = this->left->right;
+			if (most_right)
+			{
+				while (most_right->right)
+					most_right = most_right->right;
+				return (*most_right);
+			}
+			else
+				return (*this->left);
+		}
 		old_closest_par = this;
 		closest_par = this->parent;
 		while (closest_par)
 		{
 			if (closest_par->right == old_closest_par)
+			{
+				// *this = *closest_par;
+				// return (*this);
 				return (*closest_par);
+			}
 			old_closest_par = closest_par;
 			closest_par = closest_par->parent;
 		}
+		// *this = *closest_par;
+		// return (*this);
 		return (*closest_par);
 	}
 
