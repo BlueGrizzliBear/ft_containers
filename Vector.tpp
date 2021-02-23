@@ -116,7 +116,7 @@ typename ft::vector<Type, Alloc>::size_type	ft::vector<Type, Alloc>::size(void) 
 template <typename Type, class Alloc>
 typename ft::vector<Type, Alloc>::size_type	ft::vector<Type, Alloc>::max_size(void) const
 {
-	return (_alloc.max_size());
+	return (std::min(_alloc.max_size(), static_cast<unsigned long>(std::numeric_limits<difference_type>::max())));
 }
 
 template <typename Type, class Alloc>
@@ -159,13 +159,13 @@ bool	ft::vector<Type, Alloc>::empty(void) const
 template <typename Type, class Alloc>
 void	ft::vector<Type, Alloc>::reserve(size_type n)
 {
-	_check_max_size(n);
 	if (n > capacity())
 	{
 		size_type new_size = size();
 		if (n > size())
 		{
 			Type * head_tmp = _alloc.allocate(n);
+			_check_max_size(n);
 			for (size_type i = 0; i < size(); i++)
 				_alloc.construct(head_tmp + i, _head[i]);
 			clear();

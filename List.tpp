@@ -110,7 +110,7 @@ typename ft::list<Type, Alloc>::size_type	ft::list<Type, Alloc>::size(void) cons
 
 template <typename Type, class Alloc>
 typename ft::list<Type, Alloc>::size_type	ft::list<Type, Alloc>::max_size(void) const
-{ return (_node_alloc.max_size()); }
+{ return (std::min(_node_alloc.max_size(), static_cast<unsigned long>(std::numeric_limits<difference_type>::max()))); }
 
 
 /* Element access */

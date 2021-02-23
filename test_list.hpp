@@ -1285,10 +1285,3 @@ void	list_tester(std::string const & title, std::string const & type)
 
 	std::cout << "COMPLETE !" << std::endl;
 }
-
-void list_test(void)
-{
-	list_tester<ft::list, std::list, int>("list", "<int>");
-	// test<ft::list, std::list, char>("list", "<char>");
-	// test<ft::list, std::list, float>("list", "<float>");
-}

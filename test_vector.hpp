@@ -1219,9 +1219,11 @@ std::stringstream *	test_vector_container(std::string const & cont_name)
 					std::stringstream * ss = new std::stringstream();
 					try
 					{
-						cont.reserve(cont.max_size() + 1);
+						cont.reserve(cont.size());
+						/* cont.reserve(cont.max_size()); */
+						/* this can return a bad_alloc exception on std::cout directly */
 					}
-					catch(std::length_error & e)
+					catch(std::exception & e)
 					{
 						*ss << "Error message: |" << e.what() << "|\n";
 					}
@@ -1407,7 +1409,6 @@ std::stringstream *	test_vector_container(std::string const & cont_name)
 					std::stringstream * ss = new std::stringstream();
 					std::stringstream *ss1 = print_cont(cont, "Displaying elements");
 					*ss << test_name << ENDL;
-					*ss << "Max_size() = |" << cont.max_size() << "|\n";
 					*ss << "Capacity() = |" << cont.capacity() << "|\n";
 					*ss << ss1->str() << ENDL << ENDL;					
 					delete ss1;
@@ -1418,7 +1419,6 @@ std::stringstream *	test_vector_container(std::string const & cont_name)
 					std::stringstream * ss = new std::stringstream();
 					std::stringstream *ss1 = print_cont(cont, "Displaying elements");
 					*ss << test_name << ENDL;
-					*ss << "Max_size() = |" << cont.max_size() << "|\n";
 					*ss << "Capacity() = |" << cont.capacity() << "|\n";
 					*ss << ss1->str() << ENDL << ENDL;					
 					delete ss1;
@@ -1429,7 +1429,6 @@ std::stringstream *	test_vector_container(std::string const & cont_name)
 					std::stringstream * ss = new std::stringstream();
 					std::stringstream *ss1 = print_cont(cont, "Displaying elements");
 					*ss << test_name << ENDL;
-					*ss << "Max_size() = |" << cont.max_size() << "|\n";
 					*ss << "Capacity() = |" << cont.capacity() << "|\n";
 					*ss << ss1->str() << ENDL << ENDL;					
 					delete ss1;
@@ -1868,12 +1867,5 @@ void	vector_tester(std::string const & title, std::string const & type)
 		print_result(test_vector_container<stdcontainerT, T>(title + type), test_vector_container<mycontainerT, T>(title + type), i, category);
 	COUT << ENDL;
 
-	std::cout << "COMPLETE !" << std::endl;
-}
-
-void vector_test(void)
-{
-	vector_tester<ft::vector, std::vector, int>("vector", "<int>");
-	// tester<ft::vector, std::vector, char>("vector", "<char>");
-	// tester<ft::vector, std::vector, float>("vector", "<float>");
+	COUT << "COMPLETE !" << std::endl;
 }

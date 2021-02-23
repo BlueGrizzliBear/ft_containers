@@ -1,24 +1,5 @@
 #include "main.hpp"
 
-template <class containerT>
-std::stringstream *	print_stack(containerT & cont, std::string const & test_name)
-{
-
-	std::stringstream * ss = new std::stringstream();
-
-	*ss << test_name << ENDL;
-	*ss << "From the top to the end of the Stack = [ ";
-
-	while (!cont.empty())
-	{
-		*ss << "(" << cont.top() << ") ";
-		cont.pop();
-	}
-	*ss << "]" << ENDL;
-	*ss << "Size = " << cont.size() << ENDL << ENDL;
-	return (ss);
-}
-
 template <template <class T, class Container = std::deque<T> > class container, class T>
 std::stringstream *	test_stack_container(std::string const & cont_name)
 {
@@ -456,11 +437,4 @@ void	stack_tester(std::string const & title, std::string const & type)
 	COUT << ENDL;
 
 	std::cout << "COMPLETE !" << std::endl;
-}
-
-void stack_test(void)
-{
-	stack_tester<ft::stack, std::stack, int>("stack", "<int>");
-	// test<ft::stack, std::stack, char>("stack", "<char>");
-	// test<ft::stack, std::stack, float>("stack", "<float>");
 }

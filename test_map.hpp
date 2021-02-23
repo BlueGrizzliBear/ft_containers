@@ -1220,8 +1220,3 @@ void	map_tester(std::string const & title, std::string const & type)
 
 	std::cout << "COMPLETE !" << std::endl;
 }
-
-void map_test(void)
-{
-	map_tester<ft::map, std::map, int, std::string>("map", "<int, std::string>");
-}

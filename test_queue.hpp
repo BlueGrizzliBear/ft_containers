@@ -1,24 +1,5 @@
 #include "main.hpp"
 
-template <class containerT>
-std::stringstream *	print_queue(containerT & cont, std::string const & test_name)
-{
-
-	std::stringstream * ss = new std::stringstream();
-
-	*ss << test_name << ENDL;
-	*ss << "From the front to the back of the queue = [ ";
-
-	while (!cont.empty())
-	{
-		*ss << "(" << cont.front() << ") ";
-		cont.pop();
-	}
-	*ss << "]" << ENDL;
-	*ss << "Size = " << cont.size() << ENDL << ENDL;
-	return (ss);
-}
-
 template <template <class T, class Container = std::deque<T> > class container, class T>
 std::stringstream *	test_queue_container(std::string const & cont_name)
 {
@@ -444,11 +425,4 @@ void	queue_tester(std::string const & title, std::string const & type)
 	COUT << ENDL;
 
 	std::cout << "COMPLETE !" << std::endl;
-}
-
-void queue_test(void)
-{
-	queue_tester<ft::queue, std::queue, int>("queue", "<int>");
-	// test<ft::queue, std::queue, char>("queue", "<char>");
-	// test<ft::queue, std::queue, float>("queue", "<float>");
 }

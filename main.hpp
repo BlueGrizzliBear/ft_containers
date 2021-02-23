@@ -75,29 +75,7 @@ class Compare
 		}
 };
 
-void	print_result(std::stringstream * std_ss, std::stringstream * my_ss, int & cat_nb, std::string cat_str)
-{
-	static int 		a = 0;
-
-	if (!(std_ss->str().compare(my_ss->str())))
-		COUT << GREEN << "[OK] " << RESET_ALL;
-	else
-	{
-		std::ofstream	file;
-		if (!a++)
-			file.open("./errors.txt", std::ofstream::trunc);
-		else
-			file.open("./errors.txt", std::ofstream::app);
-		COUT << RED << "[KO] " << RESET_ALL;
-		if (cat_nb == 1)
-			file << cat_str << ENDL;
-		file << "*------------ test #" << cat_nb << " ------------*" << ENDL;
-		file << "std::" << std_ss->str() << "ft::" << my_ss->str();
-		file.close();
-	}
-	delete std_ss;
-	delete my_ss;
-}
+void	print_result(std::stringstream * std_ss, std::stringstream * my_ss, int & cat_nb, std::string cat_str);
 
 template <class containerT>
 std::stringstream *	print_cont(containerT & cont, std::string const & test_name)
@@ -144,6 +122,44 @@ std::stringstream *	print_map(containerT & cont, std::string const & test_name)
 	*ss << "]" << ENDL;
 	*ss << "Size = " << cont.size() << ENDL;
 	*ss << ENDL;
+	return (ss);
+}
+
+template <class containerT>
+std::stringstream *	print_stack(containerT & cont, std::string const & test_name)
+{
+
+	std::stringstream * ss = new std::stringstream();
+
+	*ss << test_name << ENDL;
+	*ss << "From the top to the end of the Stack = [ ";
+
+	while (!cont.empty())
+	{
+		*ss << "(" << cont.top() << ") ";
+		cont.pop();
+	}
+	*ss << "]" << ENDL;
+	*ss << "Size = " << cont.size() << ENDL << ENDL;
+	return (ss);
+}
+
+template <class containerT>
+std::stringstream *	print_queue(containerT & cont, std::string const & test_name)
+{
+
+	std::stringstream * ss = new std::stringstream();
+
+	*ss << test_name << ENDL;
+	*ss << "From the front to the back of the queue = [ ";
+
+	while (!cont.empty())
+	{
+		*ss << "(" << cont.front() << ") ";
+		cont.pop();
+	}
+	*ss << "]" << ENDL;
+	*ss << "Size = " << cont.size() << ENDL << ENDL;
 	return (ss);
 }
 
