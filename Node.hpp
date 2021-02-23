@@ -84,8 +84,6 @@ namespace ft
 			node *		left;
 			node *		right;
 	};
-
-
 }
 
 #include "./Node.tpp"

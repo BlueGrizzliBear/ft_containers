@@ -42,13 +42,12 @@ namespace ft
 			void	push(const value_type & val);
 			void	pop(void);
 
-		/* Friend usage on non-member operator overloards --- mandatory since no operator overload is defined in stack on cplusplus.com --- */
+		/* Friend usage for the non-member operator overloads --- mandatory since no operator overload is defined in stack on cplusplus.com --- */
 		template <class Type, class Cont>
 		friend	bool	operator==(const stack<Type, Cont> & lhs, const stack<Type, Cont> & rhs);
 		template <class Type, class Cont>
 		friend	bool	operator<(const stack<Type, Cont> & lhs, const stack<Type, Cont> & rhs);
 	};
-
 	/* --- Non-member function overloads --- */
 		/*	(1)	*/	template <class T, class Container>
 					bool	operator==(const stack<T, Container> & lhs, const stack<T, Container> & rhs);

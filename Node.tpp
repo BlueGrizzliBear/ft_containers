@@ -86,7 +86,7 @@
 /* Constructor */
 /*	default	(1)	*/
 	template <class Key, class Type, class Compare, class Alloc>
-	ft::PNode<Key, Type, Compare, Alloc>::PNode(void) : pair(NULL), is_end(0), parent(NULL), left(NULL), right(NULL) {}
+	ft::PNode<Key, Type, Compare, Alloc>::PNode(void) : pair(), is_end(0), parent(NULL), left(NULL), right(NULL) {}
 
 /*	fill	(2)	*/
 	template <class Key, class Type, class Compare, class Alloc>
@@ -108,9 +108,6 @@
 	{
 		if (this != &rhs)
 		{
-			// this->pair(rhs.pair);
-			// pair.first = rhs.pair.first;
-			// pair.second = rhs.pair.second;
 			is_end = rhs.is_end;
 			parent = rhs.parent;
 			left = rhs.left;
@@ -183,7 +180,6 @@
 	{
 		PNode<Key, Type, Compare, Alloc> *	closest_par;
 		PNode<Key, Type, Compare, Alloc> *	old_closest_par;
-	
 		PNode<Key, Type, Compare, Alloc> *	most_right;
 
 		if (this->left)
@@ -203,16 +199,10 @@
 		while (closest_par)
 		{
 			if (closest_par->right == old_closest_par)
-			{
-				// *this = *closest_par;
-				// return (*this);
 				return (*closest_par);
-			}
 			old_closest_par = closest_par;
 			closest_par = closest_par->parent;
 		}
-		// *this = *closest_par;
-		// return (*this);
 		return (*closest_par);
 	}
 

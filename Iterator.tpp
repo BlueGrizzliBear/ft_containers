@@ -90,17 +90,6 @@ bool	ft::operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterat
 	/* copy		(2)	*/
 	template <class Type, class Alloc, class Node>
 	ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Bidirectional<value_type, alloc_type, node_type> const & cpy) : BaseIterator<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
-	// ft::Bidirectional<Type, Alloc, Node>::Bidirectional(Bidirectional<value_type, Alloc, Node> const & cpy) {
-	// 	std::cout << "Bidir copy constructor\n";
-	// 	*this = cpy; }
-
-	/* base		(3)	*/
-	// template <class Type, class Alloc, class Node>
-	// // ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<value_type, alloc_type, node_type> const & cpy) : BaseIterator<value_type, Alloc, Node>(cpy) {
-	// ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<Type, Alloc, Node> const & cpy) {
-	// 	*this = cpy; }
-	// // ft::Bidirectional<Type, Alloc, Node>::Bidirectional(BaseIterator<value_type, alloc_type, node_type> const & cpy) {
-	// 	*this = cpy; }
 
 /* Destructor */
 	template <class Type, class Alloc, class Node>
@@ -226,10 +215,6 @@ bool	ft::operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterat
 	/* copy		(3)	*/
 	template <class Type, class Alloc, class Node>
 	ft::RandomAccess<Type, Alloc, Node>::RandomAccess(Bidirectional<value_type, Alloc, Node> const & cpy) : Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
-
-	// /* base		(3)	*/
-	// template <class Type, class Alloc, class Node>
-	// ft::RandomAccess<Type, Alloc, Node>::RandomAccess(BaseIterator<Type, Alloc, Node> const & cpy) : Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>(cpy) {}
 
 /* Destructor */
 	template <class Type, class Alloc, class Node>

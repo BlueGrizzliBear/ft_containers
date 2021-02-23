@@ -92,6 +92,7 @@ namespace ft
 					bool	operator>=(const BaseIterator<Type, Alloc, Node>& lhs, const BaseIterator<Type, Alloc, Node>& rhs);
 
 
+
 	/* Bidirectionnal Class declaration */
 	template <class Type, class Alloc, class Node>
 	class Bidirectional : public BaseIterator<typename ft::iterator_traits<Type>::value_type, Alloc, Node>
@@ -110,7 +111,6 @@ namespace ft
 		/* Constructor */
 			/* default	(1)	*/	Bidirectional(Node * node = NULL);
 			/* copy		(2)	*/	Bidirectional(Bidirectional<value_type, Alloc, Node> const & cpy);
-			// /* base		(3)	*/	Bidirectional(BaseIterator<Type, Alloc, Node> const & cpy);
 
 		/* Destructor */
 			virtual ~Bidirectional();
@@ -143,6 +143,8 @@ namespace ft
 			/* post-decrement	(9)	*/	Bidirectional	operator--(int);
 	};
 
+
+
 	/* RandomAccess Class declaration */
 	template <class Type, class Alloc, class Node>
 	class RandomAccess : public Bidirectional<typename ft::iterator_traits<Type>::value_type, Alloc, Node>
@@ -162,7 +164,6 @@ namespace ft
 			/* default	(1)	*/	RandomAccess(Node * node = NULL);
 			/* copy		(2)	*/	RandomAccess(RandomAccess<value_type, Alloc, Node> const & cpy);
 			/* copy		(3)	*/	RandomAccess(Bidirectional<value_type, Alloc, Node> const & cpy);
-			// /* base		(3)	*/	RandomAccess(BaseIterator<Type, Alloc, Node> const & cpy);
 
 		/* Destructor */
 			virtual ~RandomAccess();
@@ -180,6 +181,8 @@ namespace ft
 			/* subtraction-assignement	(19)	*/			RandomAccess &	operator-=(difference_type n);
 			/* subscript				(20)	*/			reference		operator[](difference_type n) const;
 	};
+
+
 
 	/* Reverse_Iterator Class declaration */
 	template <class Iter>

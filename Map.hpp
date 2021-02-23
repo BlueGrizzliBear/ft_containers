@@ -21,8 +21,6 @@ namespace ft
 			typedef std::pair<const key_type, mapped_type> 		value_type;
 			typedef	Compare	key_compare;
 			class value_compare
-			// class value_compare	: std::binary_function<value_type, value_type, bool>
-			// in C++98, it is required to inherit binary_function<value_type,value_type,bool>
 			{
 				friend class map;
 				protected:
@@ -50,15 +48,15 @@ namespace ft
 
 		private:
 			typedef typename allocator_type::template rebind<PNode<Key, T, Compare, Alloc> >::other	node_allocator;
-			// typedef	PNode<Key, Type, Compare, Alloc>node;
+			typedef	PNode<Key, T, Compare, Alloc>	node;
 
 		/* --- Member attributes --- */
 		private:
-			key_compare						_compare;
-			allocator_type					_alloc;
-			node_allocator					_node_alloc;
-			size_type						_size;
-			PNode<Key, T, Compare, Alloc> *	_root;
+			key_compare		_compare;
+			allocator_type	_alloc;
+			node_allocator	_node_alloc;
+			size_type		_size;
+			node *			_root;
 		
 		/* --- Member functions --- */
 		public:
@@ -128,14 +126,12 @@ namespace ft
 
 		/* --- Private functions --- */
 		private:
-			value_type *					_try_add_node(value_type pair);
-			PNode<Key, T, Compare, Alloc> *	_create_node(value_type pair, bool is_end);
-			PNode<Key, T, Compare, Alloc> *	_find_node(const value_type & pair) const;
-			void							_reinsert_branch(PNode<Key, T, Compare, Alloc> * node);
-			void							_destroy_branch(PNode<Key, T, Compare, Alloc> * node);
-
+			value_type *	_try_add_node(value_type pair);
+			node *			_create_node(value_type pair, bool is_end, node * parent = NULL, node * left = NULL, node * right = NULL);
+			node *			_find_node(const value_type & pair) const;
+			void			_reinsert_branch(PNode<Key, T, Compare, Alloc> * node);
+			void			_destroy_branch(PNode<Key, T, Compare, Alloc> * node);
 	};
-
 }
 
 # include "./Map.tpp"

@@ -45,7 +45,7 @@ namespace ft
 			void	push(const value_type & val);
 			void	pop(void);
 
-		/* Friend usage on non-member operator overloards --- mandatory since no operator overload is defined in queue on cplusplus.com --- */
+		/* Friend usage on the non-member operator overloads --- mandatory since no operator overload is defined in queue on cplusplus.com --- */
 		template <class Type, class Cont>
 		friend	bool	operator==(const queue<Type, Cont> & lhs, const queue<Type, Cont> & rhs);
 		template <class Type, class Cont>
