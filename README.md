@@ -1,6 +1,6 @@
 # ft_containers
 
-Recoded the main containers of the [Standard Template Library](https://www.cplusplus.com/reference/stl/?kw=stl), in C++
+Recoded the main containers of the [Standard Template Library](https://www.cplusplus.com/reference/stl/?kw=stl), in C++.
 
 
 Implemented containers:
@@ -12,7 +12,7 @@ Implemented containers:
 
 ## Context
 
-This project was done as part of 42's Software Engineer program.
+This project was done as part of 42's Software Engineer program. Project was passed the 24th February 2021.
 
 ## Usage
 
